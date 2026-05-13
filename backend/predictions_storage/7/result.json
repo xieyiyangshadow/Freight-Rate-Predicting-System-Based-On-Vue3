@@ -1,0 +1,27 @@
+{
+  "summary": {
+    "task_id": 7,
+    "task_name": "e2e-demo-task",
+    "origin": "A",
+    "destination": "B",
+    "base_fare": 156,
+    "model_count": 1,
+    "best_model_id": 9,
+    "best_model_name": "e2e-demo-model",
+    "best_predicted_fare": 152.1,
+    "average_predicted_fare": 152.1,
+    "spread": 0.0
+  },
+  "models": [
+    {
+      "model_id": 9,
+      "model_name": "e2e-demo-model",
+      "model_status": "completed",
+      "predicted_fare": 152.1,
+      "delta": -3.9,
+      "delta_pct": -2.5,
+      "confidence": 0.901,
+      "rank": 1
+    }
+  ]
+}
