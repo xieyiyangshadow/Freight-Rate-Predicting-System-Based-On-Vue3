@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     
     "rest_framework",#提供了一个强大的工具集，用于构建Web APIs，支持多种格式（如JSON、XML等），并提供了认证、权限和序列化等功能。
     "corsheaders",#允许跨域资源共享（CORS），使得前端应用能够访问后端API，即使它们在不同的域上运行。
+    "rest_framework_simplejwt",#提供了一种基于JWT的认证方式，用于处理API的认证和授权。
     
     "apps.user_authorization.apps.UserAuthorizationConfig",
     "apps.prediction.apps.PredictionConfig",
@@ -136,7 +137,19 @@ CORS_ALLOW_CREDENTIALS = True
 
 # DRF settings
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 10,
     "DEFAULT_FILTER_BACKENDS": ['rest_framework.filters.SearchFilter'],
+}
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
 }
