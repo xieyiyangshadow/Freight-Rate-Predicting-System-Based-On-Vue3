@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.prediction.apps.PredictionConfig",
     "apps.history.apps.HistoryConfig",
     "apps.common.apps.CommonConfig",
+    "apps.dataset.apps.DatasetConfig",
 ]
 
 MIDDLEWARE = [
