@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .Serializer import DatasetSerializer, DatasetUploadSerializer
+from .Serializer import DatasetSerializer, DatasetUploadSerializer, DatasetDeleteSerializer
 from .models import Dataset
 from django.contrib.auth.models import User
 import uuid
@@ -39,7 +39,7 @@ class DatasetUploadView(APIView):
         sys_name = f"{uuid.uuid4()}_{datetime.now().timestamp()}"
         
         create_time = datetime.now()
-        owner = request.data.get('user_id')
+        owner = request.user
         file = request.FILES.get('file')
         file = pd.read_csv(file)
         file.to_csv(f"datasets/{sys_name}.csv", index=False)
@@ -52,11 +52,9 @@ class DatasetUploadView(APIView):
         data_types = {}
         for col in columns:
             if pd.api.types.is_numeric_dtype(file[col]):
-                data_types[col] = 'numeric'
-            elif pd.api.types.is_string_dtype(file[col]):
-                data_types[col] = 'categorical'
+                data_types[col] = True
             else:
-                data_types[col] = 'other'
+                data_types[col] = False
         
         dataset = Dataset.objects.create(
             dataset_id=uuid.uuid4(),
@@ -64,7 +62,7 @@ class DatasetUploadView(APIView):
             description=description,
             sys_name=sys_name,
             create_time=create_time,
-            owner=User.objects.get(id=owner),
+            owner=owner,
             file_path=file_path,
             columns=columns,
             target_column=target_column,
@@ -89,13 +87,8 @@ class DatasetListView(APIView):
     def get(self, request):
         """ 
         GET /api/dataset/list/
-        请求参数：
-        {
-            "user_id": "查询数据集的用户ID"
-        }
         """
-        user_id = request.query_params.get('user_id')
-        datasets = Dataset.objects.filter(owner__id=user_id)
+        datasets = Dataset.objects.filter(owner=request.user)
         serializer = DatasetSerializer(datasets, many=True)
         return Response(
             {
@@ -104,4 +97,43 @@ class DatasetListView(APIView):
             },
             status=status.HTTP_200_OK
         )
+        
+class DatasetDeleteView(APIView):
+    """ 
+    数据集删除视图
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def delete(self, request, dataset_id):
+        """ 
+        DELETE /api/dataset/delete/{dataset_id}/
+        请求体：
+        {}
+        """
+        try:
+            dataset = Dataset.objects.get(dataset_id=dataset_id, owner=request.user)
+            if os.path.exists(dataset.file_path):
+                os.remove(dataset.file_path)
+                
+            dataset.delete()
+            return Response(
+                {
+                    "message": "数据集删除成功"
+                },
+                status=status.HTTP_200_OK
+            )
+        except Dataset.DoesNotExist:
+            return Response(
+                {
+                    "message": "数据集不存在或没有权限删除"
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "message": f"数据集删除失败: {str(e)}"
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
         

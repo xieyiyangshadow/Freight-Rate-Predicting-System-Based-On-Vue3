@@ -21,4 +21,5 @@ from django.urls import path, include
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/auth/", include("apps.user_authorization.urls")),  # 用户认证相关的URL
+    path("api/dataset/", include("apps.dataset.urls")),  # 数据集相关的URL
 ]

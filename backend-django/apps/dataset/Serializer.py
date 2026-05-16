@@ -4,6 +4,7 @@ import pandas as pd
 import uuid
 from datetime import datetime
 import os
+from .models import Dataset
 
 class DatasetSerializer(serializers.ModelSerializer):
     """ 
@@ -67,3 +68,9 @@ class DatasetUploadSerializer(serializers.Serializer):
         except Exception as e:
             raise serializers.ValidationError(f"无法读取上传的CSV文件: {str(e)}")
         return data
+    
+class DatasetDeleteSerializer(serializers.Serializer):
+    """ 
+    数据集删除序列化器
+    """
+    pass
