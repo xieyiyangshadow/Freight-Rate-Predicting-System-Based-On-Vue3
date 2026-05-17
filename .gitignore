@@ -1,1 +1,6 @@
-./backend-django/venv/
+backend-django/venv/
+venv/
+env/
+*.pyc
+__pycache__/
+.Python
