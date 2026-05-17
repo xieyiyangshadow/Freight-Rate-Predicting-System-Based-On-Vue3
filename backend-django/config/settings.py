@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "apps.history.apps.HistoryConfig",
     "apps.common.apps.CommonConfig",
     "apps.dataset.apps.DatasetConfig",
+    "apps.model.apps.ModelConfig",
 ]
 
 MIDDLEWARE = [

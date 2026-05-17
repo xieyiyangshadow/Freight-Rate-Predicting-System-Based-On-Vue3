@@ -24,7 +24,6 @@ class DatasetUploadView(APIView):
         POST /api/dataset/upload/
         请求体：
         {
-            "user_id": "上传数据集的用户ID",
             "user_provided_name": "用户提供的数据集名称",
             "description": "数据集描述",
             "file": "上传的数据集文件，支持CSV格式",
