@@ -23,4 +23,5 @@ urlpatterns = [
     path("api/auth/", include("apps.user_authorization.urls")),  # 用户认证相关的URL
     path("api/dataset/", include("apps.dataset.urls")),  # 数据集相关的URL
     path("api/model/", include("apps.model.urls")),  # 模型相关的URL
+    path("api/prediction/", include("apps.prediction.urls")),  # 预测任务相关的URL
 ]
