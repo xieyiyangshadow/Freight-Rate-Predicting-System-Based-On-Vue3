@@ -16,6 +16,7 @@ import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, mean_squared_error, mean_absolute_error, precision_score, recall_score, f1_score, r2_score
 import numpy as np
+from .tasks import train_model_task
 
 # Create your views here.
 class ModelUploadView(APIView):
@@ -94,95 +95,23 @@ class ModelUploadView(APIView):
             # 需要训练的模型
             else:
                 model = Model.objects.create(
-                    model_id=uuid.uuid4(),
                     user_provided_name=user_provided_name,
                     description=description,
                     owner=request.user,
                     dataset=Dataset.objects.get(dataset_id=dataset_id),
                     model_file_path=model_file_path,
-                    training_status='pending',
-                    create_time=datetime.now(),
-                    update_time=datetime.now()
+                    training_status='pending'
                 )
-                
-                response_serializer = ModelSerializer(model)
-                
-                try:
-                    model.training_status = 'training'
-                    model.save()
-                    
-                    df = pd.read_csv(model.dataset.file_path)
-                    target_column = model.dataset.target_column
-                    X = df.drop(columns=[target_column])
-                    y = df[target_column]
-                    
-                    train_X, val_X, train_y, val_y = train_test_split(X, y, test_size=0.2, random_state=42)
-                    
-                    if model_extension == '.joblib':
-                        clf = joblib.load(model_file_path)
-                    else:
-                        with open(model_file_path, 'rb') as f:
-                            clf = pickle.load(f)
-                    
-                    clf.fit(train_X, train_y)
-                    y_pred = clf.predict(val_X)
-                    r2 = r2_score(val_y, y_pred)
-                    mse = mean_squared_error(val_y, y_pred)
-                    rmse = np.sqrt(mse)
-                    mae = mean_absolute_error(val_y, y_pred)
-                    
-                    metrics = {
-                        "model_name": user_provided_name,
-                        "dataset_name": model.dataset.user_provided_name,
-                        "training_date": datetime.now().isoformat(),
-                        "training_duration": (datetime.now() - model.create_time).total_seconds(),
-                        "metrics": {
-                            "r2_score": r2,
-                            "mean_squared_error": mse,
-                            "root_mean_squared_error": rmse,
-                            "mean_absolute_error": mae
-                        },
-                        "additional_info": {
-                            "train_samples": len(train_X),
-                            "val_samples": len(val_X),
-                            "train_test_split_ratio": 0.2
-                        }
-                    }
-                    
-                    if model_extension == '.joblib':
-                        joblib.dump(clf, model_file_path)
-                    else:
-                        with open(model_file_path, 'wb') as f:
-                            pickle.dump(clf, f)
-                            
-                    evaluation_file_path = os.path.join(models_dir, f"{model_filename}_evaluation.json")
-                    with open(evaluation_file_path, 'w', encoding='utf-8') as f:
-                        json.dump(metrics, f, ensure_ascii=False, indent=4)
-                        
-                    model.evaluation_file_path = evaluation_file_path
-                    model.training_status = 'completed'
-                    model.save()
-                
-                except Exception as e:
-                    model.training_status = 'failed'
-                    model.save()
-                    return Response(
-                        {
-                            'message': f'模型训练失败: {str(e)}',
-                            'model': response_serializer.data
-                        },
-                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
-                    )
+                train_model_task.delay(str(model.model_id))
                 
                 response_serializer = ModelSerializer(model)
                 return Response(
                     {
-                        'message': '模型上传并训练成功',
+                        'message': '模型上传成功，正在训练中',
                         'model': response_serializer.data
                     },
                     status=status.HTTP_201_CREATED
                 )
-            
         except Exception as e:
             return Response(
                 {
@@ -190,7 +119,7 @@ class ModelUploadView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
+            
 class ModelListView(APIView):
     """ 
     模型列表视图

@@ -25,17 +25,53 @@ export const useModelStore = defineStore('model', () => {
         try {
             const response = await modelApi.uploadModel(formData)
             models.value.push(response.data.data)
+
+            if (response.data.data.training_status === 'pending') {
+                startPolling()
+            }
             return response.data
         } catch (err: any) {
-            error.value = err.response?.data?.message || '上传模型失败'
+            error.value = err.response?.data?.message || err.message || '上传模型失败'
             throw err
         } finally {
             isLoading.value = false
         }
     }
 
-    const fetchModels = async () => {
-        isLoading.value = true
+    let pollInterval: any = null
+
+    const startPolling = () => {
+        if (pollInterval) return
+
+        console.log('开始轮询模型状态...')
+
+        pollInterval = setInterval(async () => {
+            try {
+                await fetchModels(true)
+
+            const hasTrainingModels = models.value.some(m =>
+                m.training_status === 'training' || m.training_status === 'pending'
+            )
+            if (!hasTrainingModels) {
+                stopPolling()
+            }
+            } catch (err) {
+                console.error('轮询模型状态失败', err)
+            }
+        }, 3000)
+    }
+
+    const stopPolling = () => {
+        if (pollInterval) {
+            clearInterval(pollInterval)
+            pollInterval = null
+        }
+    }
+
+    const fetchModels = async (isPolling = false) => {
+        if (!isPolling) {
+            isLoading.value = true
+        }
         error.value = null
         try {
             const response = await modelApi.getModelList()
@@ -45,7 +81,9 @@ export const useModelStore = defineStore('model', () => {
             error.value = err.response?.data?.message || err.message || '获取模型列表失败'
             throw err
         } finally {
-            isLoading.value = false
+            if (!isPolling) {
+                isLoading.value = false
+            }
         }
     }
 
@@ -101,6 +139,8 @@ export const useModelStore = defineStore('model', () => {
         setCurrentModel,
         clearError,
         refreshModel,
+        startPolling,
+        stopPolling,
     }
 
 })
