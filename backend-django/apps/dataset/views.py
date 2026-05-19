@@ -40,17 +40,23 @@ class DatasetUploadView(APIView):
         create_time = datetime.now()
         owner = request.user
         file = request.FILES.get('file')
-        file = pd.read_csv(file)
-        file.to_csv(f"datasets/{sys_name}.csv", index=False)
-        file_path = f"datasets/{sys_name}.csv"
-        columns = list(file.columns)
+        # 重置文件指针到开始位置
+        file.seek(0)
+        df = pd.read_csv(file)
+        
+        # 确保datasets目录存在
+        os.makedirs('datasets', exist_ok=True)
+        
+        file_path = os.path.join('datasets', f"{sys_name}.csv")
+        df.to_csv(file_path, index=False)
         target_column = serializer.validated_data.get('target_column')
         description = serializer.validated_data.get('description', '')
         user_provided_name = serializer.validated_data.get('user_provided_name')
+        columns = list(df.columns)
         
         data_types = {}
         for col in columns:
-            if pd.api.types.is_numeric_dtype(file[col]):
+            if pd.api.types.is_numeric_dtype(df[col]):
                 data_types[col] = True
             else:
                 data_types[col] = False

@@ -41,11 +41,15 @@ class DatasetUploadSerializer(serializers.Serializer):
         file = self.initial_data.get('file')
         if file:
             try:
+                # 重置文件指针到开始位置
+                file.seek(0)
                 df = pd.read_csv(file)
                 if not value or value.strip() == "":
                     raise serializers.ValidationError("目标列名称不能为空")
                 if value not in df.columns:
                     raise serializers.ValidationError(f"目标列 '{value}' 不存在于上传的CSV文件中")
+                # 重新设置文件指针到开始，供后续使用
+                file.seek(0)
             except Exception as e:
                 raise serializers.ValidationError(f"无法读取上传的CSV文件: {str(e)}")
         return value
@@ -58,9 +62,12 @@ class DatasetUploadSerializer(serializers.Serializer):
         target_column = data.get('target_column')
         
         try:
+            # 重置文件指针到开始位置
+            file.seek(0)
             df = pd.read_csv(file)
-            if df.isnull().values.any() or '' in df.columns:
-                raise serializers.ValidationError("CSV文件中存在空值或空列，请确保数据完整")
+            # 检查是否有完全空的列或列名为空
+            if '' in df.columns:
+                raise serializers.ValidationError("CSV文件中存在空列，请确保数据完整")
             if target_column not in df.columns:
                 raise serializers.ValidationError(f"目标列 '{target_column}' 不存在于上传的CSV文件中")
             data['dataframe'] = df

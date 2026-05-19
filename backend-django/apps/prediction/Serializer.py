@@ -84,7 +84,7 @@ class PredictionTaskSerializer(serializers.ModelSerializer):
         return [
             {
                 "model_id": str(model.model_id),
-                "model_name": model.model_name,
+                "model_name": model.user_provided_name,
                 "training_status": model.training_status
             }
             for model in obj.model.all()

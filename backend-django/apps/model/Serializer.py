@@ -73,11 +73,16 @@ class ModelUploadSerializer(serializers.Serializer):
                 raise serializers.ValidationError("评估指标文件必须是.json格式")
             
             try:
+                # 重置文件指针到开始位置
+                value.seek(0)
                 content = value.read()
                 json.loads(content)
+                # 重新设置文件指针到开始，供后续使用
                 value.seek(0)
             except json.JSONDecodeError:
                 raise serializers.ValidationError("评估指标文件必须是有效的JSON格式")
+            except Exception as e:
+                raise serializers.ValidationError(f"无法读取评估指标文件: {str(e)}")
         return value
     
     def validate(self, data):

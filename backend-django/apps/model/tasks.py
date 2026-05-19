@@ -29,7 +29,7 @@ def train_model_task(self, model_id):
         
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
         
-        model_extension = '.joblib' if model.model_file.endswith('.joblib') else '.pkl'
+        model_extension = '.joblib' if model.model_file_path.endswith('.joblib') else '.pkl'
         
         if model_extension == '.joblib':
             user_model = joblib.load(model.model_file_path)
@@ -45,7 +45,7 @@ def train_model_task(self, model_id):
         mae = mean_absolute_error(y_test, y_pred)
         
         metrics = {
-            "model_name": model.model_name,
+            "model_name": model.user_provided_name,
             "dataset_name": dataset.user_provided_name,
             "training_date": datetime.now().isoformat(),
             "training_duration": (datetime.now() - model.create_time).total_seconds(),

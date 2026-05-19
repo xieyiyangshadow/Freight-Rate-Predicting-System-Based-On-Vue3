@@ -66,6 +66,8 @@ class ModelUploadView(APIView):
             if upload_mode == 'ready':
                 evaluation_file = serializer.validated_data.get('evaluation_file')
                 evaluation_file_path = os.path.join(models_dir, f"{model_filename}_evaluation.json")
+                # 重置文件指针到开始位置
+                evaluation_file.seek(0)
                 with open(evaluation_file_path, 'wb+') as destination:
                     for chunk in evaluation_file.chunks():
                         destination.write(chunk)

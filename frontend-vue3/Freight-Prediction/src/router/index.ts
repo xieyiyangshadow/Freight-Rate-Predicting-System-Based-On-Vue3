@@ -22,14 +22,44 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: RegisterView,
-    }
-  ],
-})
-
+    },
+    
+    {
+      path: '/datasets',
+      name: 'datasets',
+      component: () => import('../views/DatasetView.vue'),
+      meta: { requiresAuth: true },
+    },
+    // {
+    //   path: '/models',
+    //   name: 'models',
+    //   component: () => import('../views/ModelView.vue'),
+    //   meta: { requiresAuth: true },
+    // },
+    // {
+    //   path: '/predictions',
+    //   name: 'predictions',
+    //   component: () => import('../views/PredictionListView.vue'),
+    //   meta: { requiresAuth: true },
+    // },
+    // {
+    //   path: '/predictions/new',
+    //   name: 'prediction-create',
+    //   component: () => import('../views/PredictionCreateView.vue'),
+    //   meta: { requiresAuth: true },
+    // },
+    // {
+    //   path: '/predictions/:id',
+    //   name: 'prediction-result',
+    //   component: () => import('../views/PredictionResultView.vue'),
+    //   meta: { requiresAuth: true },
+    //   props: true,
+    // },
+  ], 
+}) 
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-
   authStore.initializeAuth()
 
   const requiresAuth = to.meta.requiresAuth
