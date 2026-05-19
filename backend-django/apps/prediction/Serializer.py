@@ -63,7 +63,6 @@ class PredictionTaskSerializer(serializers.ModelSerializer):
             'task_id',
             'task_name',
             'task_description',
-            'owner',
             'dataset',
             'input_data',
             'results',
@@ -84,7 +83,7 @@ class PredictionTaskSerializer(serializers.ModelSerializer):
         return [
             {
                 "model_id": str(model.model_id),
-                "model_name": model.user_provided_name,
+                "user_provided_name": model.user_provided_name,
                 "training_status": model.training_status
             }
             for model in obj.model.all()

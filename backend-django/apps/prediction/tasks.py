@@ -14,7 +14,7 @@ def execute_prediction_task(self, task_id):
     try:
         task = PredictionTask.objects.get(task_id=task_id)
         
-        task.status = 'predicting'
+        task.status = 'running'
         task.save()
         
         models = task.model.all()
