@@ -9,3 +9,6 @@ export const getPredictionList = () =>
 
 export const getPredictionDetail = (taskId: string) =>
     client.get(`/prediction/detail/${taskId}/`)
+
+export const deletePrediction = (taskId: string) =>
+    client.delete(`/prediction/delete/${taskId}/`)

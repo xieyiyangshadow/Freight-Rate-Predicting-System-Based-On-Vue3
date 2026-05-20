@@ -1,0 +1,29 @@
+{
+    "model_name": "lnr",
+    "dataset_name": "\u6d4b\u8bd52",
+    "training_date": "2026-05-20T11:42:04.958981+00:00",
+    "training_duration": 6.252798,
+    "metrics": {
+        "r2_score": 0.6143986145928237,
+        "mse": 5052955174.596931,
+        "rmse": 71084.14151269558,
+        "mae": 51836.14042172936
+    },
+    "additional_info": {
+        "train_samples": 16512,
+        "test_samples": 4128,
+        "train_test_split_ratio": 0.2
+    },
+    "training_columns": [
+        "longitude",
+        "latitude",
+        "housing_median_age",
+        "total_rooms",
+        "total_bedrooms",
+        "population",
+        "households",
+        "median_income"
+    ],
+    "categorical_columns": [],
+    "preprocessor_file_path": "models/b0b84ffa-69f6-4beb-9db6-98a237057423_preprocessor.joblib"
+}

@@ -8,8 +8,9 @@ export const useDatasetStore  = defineStore('dataset', () => {
     const currentDataset = ref<Dataset | null>(null)
     const isLoading = ref(false)
     const error = ref<string | null>(null)
+    const currentDatasetDetail = ref<any | null>(null)
 
-    const datasetCount = computed(() => datasets.value.length)
+    const datasetCount = computed(() => (datasets.value || []).length)
 
     const uploadDataset = async (formData: FormData) => {
         isLoading.value = true
@@ -55,6 +56,21 @@ export const useDatasetStore  = defineStore('dataset', () => {
         }
     }
 
+    const fetchDatasetDetail = async (datasetId: string) => {
+        isLoading.value = true
+        error.value = null
+        try {
+            const response = await datasetApi.getDatasetDetail(datasetId)
+            currentDatasetDetail.value = response.data
+            return response.data
+        } catch (err: any) {
+            error.value = err.response?.data?.message || err.message || '获取数据集详情失败'
+            throw err
+        } finally {
+            isLoading.value = false
+        }
+    }
+
     const setCurrentDataset = (dataset: Dataset | null) => {
         currentDataset.value = dataset
     }
@@ -66,12 +82,14 @@ export const useDatasetStore  = defineStore('dataset', () => {
     return {
         datasets,
         currentDataset,
+        currentDatasetDetail,
         isLoading,
         error,
         datasetCount,
         uploadDataset,
         fetchDatasets,
         deleteDataset,
+        fetchDatasetDetail,
         setCurrentDataset,
         clearError
     }

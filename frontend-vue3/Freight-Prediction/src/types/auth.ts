@@ -19,7 +19,11 @@ export interface UserInfo {
 export interface AuthResponse {
     message: string
     user: UserInfo
-    token: {
+    token?: {
+        refresh: string
+        access: string
+    }
+    tokens?: {
         refresh: string
         access: string
     }

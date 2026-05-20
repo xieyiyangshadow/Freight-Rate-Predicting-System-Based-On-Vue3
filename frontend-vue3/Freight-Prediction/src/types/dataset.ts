@@ -28,6 +28,15 @@ export interface DatasetUploadResponse {
     dataset: Dataset
 }
 
+export interface DatasetDetailResponse {
+    message: string
+    dataset: Dataset
+    preview: Array<Record<string, string | number | null>>
+    describe: Record<string, Record<string, number | null>>
+    histograms: Record<string, { counts: number[]; bin_edges: number[] }>
+    correlation: Record<string, Record<string, number>>
+}
+
 export interface DatasetState {
     datasets: Dataset[]
     currentDataset: Dataset | null

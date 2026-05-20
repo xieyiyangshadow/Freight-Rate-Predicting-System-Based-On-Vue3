@@ -9,6 +9,7 @@ from .tasks import execute_prediction_task
 from apps.model.models import Model
 from apps.dataset.models import Dataset
 import uuid
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 class CreatePredictionTaskView(APIView):
@@ -117,3 +118,15 @@ class PredictionTaskDetailView(APIView):
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
+
+class DeletePredictionTaskView(APIView):
+    """ 删除预测任务 """
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, task_id):
+        try:
+            task = PredictionTask.objects.get(task_id=task_id, owner=request.user)
+            task.delete()
+            return Response({'message': '预测任务已删除'}, status=status.HTTP_200_OK)
+        except PredictionTask.DoesNotExist:
+            return Response({'message': '预测任务不存在或没有权限'}, status=status.HTTP_404_NOT_FOUND)

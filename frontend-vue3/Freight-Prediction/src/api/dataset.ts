@@ -15,3 +15,7 @@ export const getDatasetList = () => {
 export const deleteDataset = (datasetId: string) => {
     return client.delete(`/dataset/delete/${datasetId}/`)
 }
+
+export const getDatasetDetail = (datasetId: string) => {
+    return client.get(`/dataset/detail/${datasetId}/`)
+}

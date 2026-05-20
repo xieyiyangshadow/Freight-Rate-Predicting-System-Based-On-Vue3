@@ -94,17 +94,30 @@ export const usePredictionStore = defineStore('prediction', () => {
             throw err
         }
     }
+
+    const deletePredictionTask = async (taskId: string) => {
+        try {
+            await predictionApi.deletePrediction(taskId)
+            const index = tasks.value.findIndex(t => t.task_id === taskId)
+            if (index !== -1) tasks.value.splice(index, 1)
+            if (currentTask.value?.task_id === taskId) currentTask.value = null
+            return { status: 'success' }
+        } catch (err: any) {
+            error.value = err.response?.data?.message || '删除预测任务失败'
+            throw err
+        }
+    }
     
     const clearError = () => {
         error.value = null
     }
     
     const completedTasks = computed(() =>
-        tasks.value.filter(t => t.status === 'completed')
+        (tasks.value || []).filter(t => t?.status === 'completed')
     )
-    
+
     const runningTasks = computed(() =>
-        tasks.value.filter(t => t.status === 'running' || t.status === 'pending')
+        (tasks.value || []).filter(t => t?.status === 'running' || t?.status === 'pending')
     )
     
     return {
@@ -120,5 +133,6 @@ export const usePredictionStore = defineStore('prediction', () => {
         clearError,
         startPolling,
         stopPolling,
+        deletePredictionTask,
     }
 })

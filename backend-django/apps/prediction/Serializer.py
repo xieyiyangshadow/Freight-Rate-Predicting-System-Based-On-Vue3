@@ -37,17 +37,19 @@ class CreatePredictionTaskSerializer(serializers.Serializer):
                 raise serializers.ValidationError(f"模型 {model.model_id} 不适用于选择的数据集")
             
         input_data = data.get('input_data')
-        required_columns = Dataset.objects.get(dataset_id=dataset_id).columns - {Dataset.objects.get(dataset_id=dataset_id).target_column}
-        input_columns = set(input_data.keys())
+        ds = Dataset.objects.get(dataset_id=dataset_id)
+        # columns is stored as a list in Dataset; use set operations
+        required_columns = set(ds.columns or []) - {ds.target_column}
+        input_columns = set((input_data or {}).keys())
         if input_columns != required_columns:
             missing = required_columns - input_columns
             extra = input_columns - required_columns
-            msg = ""
+            msg_parts = []
             if missing:
-                msg += f"缺少输入列: {', '.join(missing)}. "
+                msg_parts.append(f"缺少输入列: {', '.join(sorted(missing))}.")
             if extra:
-                msg += f"包含额外列: {', '.join(extra)}."
-            raise serializers.ValidationError(msg)
+                msg_parts.append(f"包含额外列: {', '.join(sorted(extra))}.")
+            raise serializers.ValidationError(' '.join(msg_parts))
         
         return data
     

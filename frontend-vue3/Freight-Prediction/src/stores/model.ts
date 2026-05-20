@@ -9,14 +9,18 @@ export const useModelStore = defineStore('model', () => {
     const isLoading = ref(false)
     const error = ref<string | null>(null)
 
-    const modelCount = computed(() => models.value.length)
+    const modelCount = computed(() => (models?.value ?? []).length)
 
     const completedModels = computed(() =>
-        models.value.filter((model) => model.training_status === 'completed')
+        (models?.value ?? []).filter((model) => model?.training_status === 'completed')
     )
 
     const trainingModels = computed(() =>
-        models.value.filter((model) => model.training_status === 'training' || model.training_status === 'pending')
+        (models?.value ?? []).filter((model) => model?.training_status === 'training' || model?.training_status === 'pending')
+    )
+
+    const failedModels = computed(() =>
+        (models?.value ?? []).filter((model) => model?.training_status === 'failed')
     )
 
     const uploadModel = async (formData: FormData) => {
@@ -24,9 +28,10 @@ export const useModelStore = defineStore('model', () => {
         error.value = null
         try {
             const response = await modelApi.uploadModel(formData)
-            models.value.push(response.data.data)
+            const uploadedModel = response.data.model
+            models.value = uploadedModel ? [...(models?.value ?? []), uploadedModel] : (models?.value ?? [])
 
-            if (response.data.data.training_status === 'pending') {
+            if (uploadedModel?.training_status === 'pending') {
                 startPolling()
             }
             return response.data
@@ -49,8 +54,8 @@ export const useModelStore = defineStore('model', () => {
             try {
                 await fetchModels(true)
 
-            const hasTrainingModels = models.value.some(m =>
-                m.training_status === 'training' || m.training_status === 'pending'
+            const hasTrainingModels = (models?.value ?? []).some(m =>
+                m?.training_status === 'training' || m?.training_status === 'pending'
             )
             if (!hasTrainingModels) {
                 stopPolling()
@@ -75,7 +80,7 @@ export const useModelStore = defineStore('model', () => {
         error.value = null
         try {
             const response = await modelApi.getModelList()
-            models.value = response.data.data
+            models.value = response.data.models ?? []
             return response.data
         } catch (err: any) {
             error.value = err.response?.data?.message || err.message || '获取模型列表失败'
@@ -92,7 +97,7 @@ export const useModelStore = defineStore('model', () => {
         error.value = null
         try {
             const response = await modelApi.deleteModel(modelId)
-            models.value = models.value.filter((model) => model.model_id !== modelId)
+            models.value = (models?.value ?? []).filter((model) => model.model_id !== modelId)
             return response.data
         } catch (err: any) {
             error.value = err.response?.data?.message || err.message || '删除模型失败'
@@ -113,11 +118,13 @@ export const useModelStore = defineStore('model', () => {
     const refreshModel = async (modelId: string) => {
         try {
             const response = await modelApi.getModelList()
-            const updatedModel = response.data.data.find((model: Model) => model.model_id === modelId)
+            const updatedModel = response.data.models?.find((model: Model) => model.model_id === modelId)
             if (updatedModel) {
-                const index = models.value.findIndex((model) => model.model_id === modelId)
+                const index = (models?.value ?? []).findIndex((model) => model.model_id === modelId)
                 if (index !== -1) {
-                    models.value[index] = updatedModel
+                    const copy = [...(models?.value ?? [])]
+                    copy[index] = updatedModel
+                    models.value = copy
                 }
             }
         } catch (err: any) {
@@ -133,6 +140,7 @@ export const useModelStore = defineStore('model', () => {
         modelCount,
         completedModels,
         trainingModels,
+        failedModels,
         uploadModel,
         fetchModels,
         deleteModel,

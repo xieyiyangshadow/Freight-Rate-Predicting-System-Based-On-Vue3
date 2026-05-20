@@ -1,0 +1,17 @@
+{
+    "model_name": "\u6d4b\u8bd5",
+    "dataset_name": "\u6d4b\u8bd52",
+    "training_date": "2026-05-20T11:36:50.838158+00:00",
+    "training_duration": 3.164368,
+    "metrics": {
+        "r2_score": 0.8300662173623996,
+        "mse": 2226827544.7474904,
+        "rmse": 47189.27361962134,
+        "mae": 31837.729878543047
+    },
+    "additional_info": {
+        "train_samples": 16512,
+        "test_samples": 4128,
+        "train_test_split_ratio": 0.2
+    }
+}

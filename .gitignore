@@ -4,3 +4,8 @@ env/
 *.pyc
 __pycache__/
 .Python
+essay.md
+test.ipynb
+API_DOCUMENTATION.md
+DATABASE_DESIGN.md
+model.pkl

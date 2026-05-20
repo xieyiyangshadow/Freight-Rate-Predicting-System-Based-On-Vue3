@@ -1,18 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import HomeView from '../views/HomeView.vue'
+import AppLayout from '@/components/AppLayout.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-      meta: { requiresAuth: true },
-    },
     {
       path: '/login',
       name: 'login',
@@ -23,53 +17,65 @@ const router = createRouter({
       name: 'register',
       component: RegisterView,
     },
-    
     {
-      path: '/datasets',
-      name: 'datasets',
-      component: () => import('../views/DatasetView.vue'),
+      path: '/',
+      component: AppLayout,
       meta: { requiresAuth: true },
+      children: [
+        {
+          path: '',
+          name: 'dashboard',
+          component: () => import('../views/HomeView.vue'),
+          meta: { title: '首页' },
+        },
+        {
+          path: 'datasets',
+          name: 'datasets',
+          component: () => import('../views/DatasetView.vue'),
+          meta: { title: '数据集管理' },
+        },
+        {
+          path: 'models',
+          name: 'models',
+          component: () => import('../views/ModelView.vue'),
+          meta: { title: '模型管理' },
+        },
+        {
+          path: 'predictions',
+          name: 'predictions',
+          component: () => import('../views/PredictionListView.vue'),
+          meta: { title: '预测任务' },
+        },
+        {
+          path: 'predictions/new',
+          name: 'prediction-create',
+          component: () => import('../views/PredictionCreateView.vue'),
+          meta: { title: '新建预测' },
+        },
+        {
+          path: 'predictions/:id',
+          name: 'prediction-result',
+          component: () => import('../views/PredictionResultView.vue'),
+          meta: { title: '预测详情' },
+          props: true,
+        },
+      ],
     },
-    // {
-    //   path: '/models',
-    //   name: 'models',
-    //   component: () => import('../views/ModelView.vue'),
-    //   meta: { requiresAuth: true },
-    // },
-    // {
-    //   path: '/predictions',
-    //   name: 'predictions',
-    //   component: () => import('../views/PredictionListView.vue'),
-    //   meta: { requiresAuth: true },
-    // },
-    // {
-    //   path: '/predictions/new',
-    //   name: 'prediction-create',
-    //   component: () => import('../views/PredictionCreateView.vue'),
-    //   meta: { requiresAuth: true },
-    // },
-    // {
-    //   path: '/predictions/:id',
-    //   name: 'prediction-result',
-    //   component: () => import('../views/PredictionResultView.vue'),
-    //   meta: { requiresAuth: true },
-    //   props: true,
-    // },
-  ], 
-}) 
+  ],
+})
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from) => {
   const authStore = useAuthStore()
-  authStore.initializeAuth()
+  await authStore.initializeAuth()
 
   const requiresAuth = to.meta.requiresAuth
 
   if (requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else if ((to.path === '/login' || to.path === '/register') && authStore.isAuthenticated) {
-    next('/')
-  } else {
-    next()
+    return '/login'
+  }
+
+  if ((to.path === '/login' || to.path === '/register') && authStore.isAuthenticated) {
+    return '/'
   }
 })
 

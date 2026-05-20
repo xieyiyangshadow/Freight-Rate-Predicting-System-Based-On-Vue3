@@ -17,6 +17,15 @@ export const useAuthStore = defineStore('auth', () => {
 
   // ============ 方法 ============
 
+  const extractTokens = (response: any) => {
+    const tokenPayload = response.token ?? response.tokens
+    if (!tokenPayload?.access || !tokenPayload?.refresh) {
+      throw new Error('登录响应缺少 token 信息')
+    }
+
+    return tokenPayload
+  }
+
   /**
    * 用户登录
    */
@@ -25,15 +34,16 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const response = await authApi.loginUser(credentials)
+      const tokenPayload = extractTokens(response)
 
       // 保存 token 和用户信息
       user.value = response.user
-      accessToken.value = response.tokens.access
-      refreshToken.value = response.tokens.refresh
+      accessToken.value = tokenPayload.access
+      refreshToken.value = tokenPayload.refresh
 
       // 保存到本地存储（持久化）
-      localStorage.setItem('accessToken', response.tokens.access)
-      localStorage.setItem('refreshToken', response.tokens.refresh)
+      localStorage.setItem('accessToken', tokenPayload.access)
+      localStorage.setItem('refreshToken', tokenPayload.refresh)
       localStorage.setItem('user', JSON.stringify(response.user))
 
       return response
@@ -53,14 +63,15 @@ export const useAuthStore = defineStore('auth', () => {
     error.value = null
     try {
       const response = await authApi.registerUser(formData)
+      const tokenPayload = extractTokens(response)
 
       // 注册成功后自动登录
       user.value = response.user
-      accessToken.value = response.tokens.access
-      refreshToken.value = response.tokens.refresh
+      accessToken.value = tokenPayload.access
+      refreshToken.value = tokenPayload.refresh
 
-      localStorage.setItem('accessToken', response.tokens.access)
-      localStorage.setItem('refreshToken', response.tokens.refresh)
+      localStorage.setItem('accessToken', tokenPayload.access)
+      localStorage.setItem('refreshToken', tokenPayload.refresh)
       localStorage.setItem('user', JSON.stringify(response.user))
 
       return response

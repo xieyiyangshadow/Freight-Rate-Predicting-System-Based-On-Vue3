@@ -1,0 +1,17 @@
+{
+    "model_name": "cat3",
+    "dataset_name": "\u6d4b\u8bd5\u6570\u636e\u96c6",
+    "training_date": "2026-05-20T11:01:35.421064+00:00",
+    "training_duration": 9.609612,
+    "metrics": {
+        "r2_score": 0.8183458728418024,
+        "mse": 2380411991.626162,
+        "rmse": 48789.46599037708,
+        "mae": 32844.72269814475
+    },
+    "additional_info": {
+        "train_samples": 16512,
+        "test_samples": 4128,
+        "train_test_split_ratio": 0.2
+    }
+}

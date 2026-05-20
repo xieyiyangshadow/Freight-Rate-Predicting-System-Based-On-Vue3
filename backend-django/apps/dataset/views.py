@@ -10,6 +10,7 @@ import uuid
 from datetime import datetime
 import os
 import pandas as pd
+import numpy as np
 
 # Create your views here.
 
@@ -141,4 +142,68 @@ class DatasetDeleteView(APIView):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+class DatasetDetailView(APIView):
+    """ 数据集详情（含样本、统计描述、直方图与相关系数） """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, dataset_id):
+        try:
+            dataset = Dataset.objects.get(dataset_id=dataset_id, owner=request.user)
+            # 读取 CSV 并生成统计
+            df = pd.read_csv(dataset.file_path)
+
+            # 样本行（最多 50 行）
+            preview = df.head(50).to_dict(orient='records')
+
+            # 数值列描述
+            numeric_df = df.select_dtypes(include=[np.number])
+            describe = {}
+            histograms = {}
+            if not numeric_df.empty:
+                for col in numeric_df.columns:
+                    col_series = numeric_df[col].dropna()
+                    desc = col_series.describe().to_dict()
+                    describe[col] = {k: float(v) if np.isscalar(v) and not pd.isna(v) else None for k, v in desc.items()}
+                    # histogram
+                    try:
+                        counts, bin_edges = np.histogram(col_series, bins=10)
+                        histograms[col] = {
+                            'counts': counts.tolist(),
+                            'bin_edges': bin_edges.tolist()
+                        }
+                    except Exception:
+                        histograms[col] = {'counts': [], 'bin_edges': []}
+
+            # 相关系数矩阵
+            correlation = {}
+            if not numeric_df.empty:
+                corr = numeric_df.corr().fillna(0)
+                correlation = corr.to_dict()
+
+            response = {
+                'message': '获取数据集详情成功',
+                'dataset': {
+                    'dataset_id': str(dataset.dataset_id),
+                    'user_provided_name': dataset.user_provided_name,
+                    'description': dataset.description,
+                    'sys_name': dataset.sys_name,
+                    'create_time': dataset.create_time.isoformat(),
+                    'file_path': dataset.file_path,
+                    'columns': dataset.columns,
+                    'target_column': dataset.target_column,
+                    'data_types': dataset.data_types,
+                },
+                'preview': preview,
+                'describe': describe,
+                'histograms': histograms,
+                'correlation': correlation,
+            }
+
+            return Response(response, status=status.HTTP_200_OK)
+        except Dataset.DoesNotExist:
+            return Response({'message': '数据集不存在或没有权限访问'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'message': f'获取数据集详情失败: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
