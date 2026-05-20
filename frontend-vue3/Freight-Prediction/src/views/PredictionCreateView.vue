@@ -4,6 +4,7 @@
 
     <div class="card">
       <form @submit.prevent="handleCreate">
+        <div v-if="predictionStore.error" class="error-box">{{ predictionStore.error }}</div>
         <div class="form-row">
             <div class="form-group">
             <label>任务名称 <span class="required">*</span></label>
@@ -141,7 +142,7 @@ const handleCreate = async () => {
     alert('预测任务创建成功，正在执行中...')
     router.push('/predictions')
   } catch (err) {
-    // 错误已在 store 中处理
+    // 错误信息会由 store 写入 predictionStore.error 并在界面展示
   } finally {
     creating.value = false
   }
@@ -169,4 +170,5 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: #409eff
 button { padding: 10px 20px; background: #409eff; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
 button:disabled { opacity: 0.6; cursor: not-allowed; }
 .btn-secondary { background: #909399; }
+ .error-box { background: #fff0f0; color: #c80000; border: 1px solid #f5c6cb; padding: 12px; border-radius: 6px; margin-bottom: 12px; }
 </style>

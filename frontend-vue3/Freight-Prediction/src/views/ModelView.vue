@@ -183,7 +183,7 @@ onMounted(async () => {
     <section class="hero-card">
       <div>
         <p class="eyebrow">模型管理</p>
-        <h1>训练中的模型、失败模型和已完成指标都一目了然</h1>
+        <h1>查看训练中的模型、失败模型和已完成指标</h1>
         <p>上传后系统会根据后端状态持续刷新，你可以直接点开任意模型查看详情和指标。</p>
       </div>
       <div class="summary-badges">

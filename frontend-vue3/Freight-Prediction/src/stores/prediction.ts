@@ -24,7 +24,34 @@ export const usePredictionStore = defineStore('prediction', () => {
             
             return response.data
         } catch (err: any) {
-            error.value = err.response?.data?.message || '创建预测任务失败'
+            // 尝试解析后端返回的详细错误信息（支持 message 字段或字段级 validation 错误）
+            const respData = err.response?.data
+            if (!respData) {
+                error.value = '创建预测任务失败'
+            } else if (typeof respData === 'string') {
+                error.value = respData
+            } else if (respData.message) {
+                error.value = respData.message
+            } else if (typeof respData === 'object') {
+                // 将对象内的错误扁平化为单条文本
+                try {
+                    const parts: string[] = []
+                    Object.entries(respData).forEach(([k, v]) => {
+                        if (Array.isArray(v)) {
+                            parts.push(`${k}: ${v.join('; ')}`)
+                        } else if (typeof v === 'string') {
+                            parts.push(`${k}: ${v}`)
+                        } else if (typeof v === 'object' && v !== null) {
+                            parts.push(`${k}: ${JSON.stringify(v)}`)
+                        }
+                    })
+                    error.value = parts.join(' | ') || '创建预测任务失败'
+                } catch (e) {
+                    error.value = '创建预测任务失败'
+                }
+            } else {
+                error.value = '创建预测任务失败'
+            }
             throw err
         } finally {
             isLoading.value = false
