@@ -73,10 +73,11 @@ class UserLoginSerializer(serializers.Serializer):
         
         user = User.objects.filter(email=email).first()
         if user is None:
-            raise serializers.ValidationError("邮箱不正确")
+            # 不明确指出是邮箱不存在，提高安全性
+            raise serializers.ValidationError("邮箱或密码错误")
         
         if not user.check_password(password):
-            raise serializers.ValidationError("密码不正确")
+            raise serializers.ValidationError("邮箱或密码错误")
         
         data['user'] = user
         return data

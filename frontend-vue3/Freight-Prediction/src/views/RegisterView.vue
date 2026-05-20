@@ -94,7 +94,7 @@ const handleRegister = async () => {
 		await authStore.register(registerForm)
 		router.push('/')
 	} catch (err: any) {
-		localError.value = err.response?.data || err.message || '注册失败'
+		localError.value = err.response?.data?.message || err.message || '注册失败'
 	}
 }
 

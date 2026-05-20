@@ -48,7 +48,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       return response
     } catch (err: any) {
-      error.value = err.response?.data?.detail || err.message || '登录失败'
+      error.value = err.response?.data?.message || err.message || '登录失败'
       throw err
     } finally {
       isLoading.value = false
@@ -76,7 +76,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       return response
     } catch (err: any) {
-      error.value = err.response?.data || err.message || '注册失败'
+      error.value = err.response?.data?.message || err.message || '注册失败'
       throw err
     } finally {
       isLoading.value = false

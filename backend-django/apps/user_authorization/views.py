@@ -33,22 +33,39 @@ class UserRegisterView(APIView):
         serializer = UserRegisterSerializer(data=request.data)
         
         if serializer.is_valid():
-            user = serializer.save()
-            refresh = RefreshToken.for_user(user)
-            return Response(
-                {
-                    "message": "注册成功",
-                    "user": UserSerializer(user).data,
-                    "tokens": {
-                        "refresh": str(refresh),
-                        "access": str(refresh.access_token),
+            try:
+                user = serializer.save()
+                refresh = RefreshToken.for_user(user)
+                return Response(
+                    {
+                        "message": "注册成功",
+                        "user": UserSerializer(user).data,
+                        "tokens": {
+                            "refresh": str(refresh),
+                            "access": str(refresh.access_token),
+                        },
                     },
-                    "refresh": str(refresh),
-                },
-                status=status.HTTP_201_CREATED,
-            )
-            
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    status=status.HTTP_201_CREATED,
+                )
+            except Exception as e:
+                return Response(
+                    {"message": f"注册失败: {str(e)}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        # 处理验证错误，返回用户友好的提示
+        error_messages = []
+        for field, errors in serializer.errors.items():
+            if isinstance(errors, list):
+                error_messages.extend(errors)
+            else:
+                error_messages.append(str(errors))
+        
+        message = error_messages[0] if error_messages else "注册信息有误，请检查"
+        return Response(
+            {"message": message},
+            status=status.HTTP_400_BAD_REQUEST
+        )
     
 class UserLoginView(APIView):
     """
@@ -69,21 +86,39 @@ class UserLoginView(APIView):
         serializer = UserLoginSerializer(data=request.data)
         
         if serializer.is_valid():
-            user = serializer.validated_data['user']
-            refresh = RefreshToken.for_user(user)
-            return Response(
-                {
-                    "message": "登录成功",
-                    "user": UserSerializer(user).data,
-                    "tokens": {
-                        "refresh": str(refresh),
-                        "access": str(refresh.access_token),
-                    }
-                },
-                status=status.HTTP_200_OK,
-            )
+            try:
+                user = serializer.validated_data['user']
+                refresh = RefreshToken.for_user(user)
+                return Response(
+                    {
+                        "message": "登录成功",
+                        "user": UserSerializer(user).data,
+                        "tokens": {
+                            "refresh": str(refresh),
+                            "access": str(refresh.access_token),
+                        }
+                    },
+                    status=status.HTTP_200_OK,
+                )
+            except Exception as e:
+                return Response(
+                    {"message": f"登录失败: {str(e)}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # 处理验证错误，返回用户友好的提示
+        error_messages = []
+        for field, errors in serializer.errors.items():
+            if isinstance(errors, list):
+                error_messages.extend(errors)
+            else:
+                error_messages.append(str(errors))
+        
+        message = error_messages[0] if error_messages else "邮箱或密码错误"
+        return Response(
+            {"message": message},
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
 class UserRefreshTokenView(APIView):
     """
@@ -100,7 +135,6 @@ class UserRefreshTokenView(APIView):
             "refresh": "xxx"
         }
         """
-        # 在urls.py中已经使用了rest_framework_simplejwt.views.TokenRefreshView来处理刷新Token的逻辑，因此这里不需要再实现一次。
         return Response(
             {'message': 'Token刷新成功'},
             status=status.HTTP_200_OK,

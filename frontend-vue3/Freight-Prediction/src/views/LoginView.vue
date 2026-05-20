@@ -79,7 +79,7 @@ const handleLogin = async () => {
     await authStore.login(loginForm)
     router.push('/')
   } catch (err: any) {
-    localError.value = err.response?.data?.detail || err.message || '登录失败'
+    localError.value = err.response?.data?.message || err.message || '登录失败'
   }
 }
 
